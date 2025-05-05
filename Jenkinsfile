@@ -11,7 +11,7 @@ pipeline {
     stage('Build and Push Docker Image with Ansible') {
       steps {
         dir('ansible') {
-          sh 'ansible-playbook deploy.yml'
+          sh "ansible-playbook deploy.yml -e build_number=${BUILD_NUMBER}"
         }
       }
     }

@@ -7,6 +7,7 @@
     image_name: my-nginx
     ecr_repo: 314525640319.dkr.ecr.il-central-1.amazonaws.com/ofir/nginx 
     region: il-central-1
+    build_number: latest # will be overwritten by Jenkins
 
   tasks:
     - name: Build Docker image
@@ -30,7 +31,7 @@
         password: "{{ ecr_password.stdout }}"
 
     - name: Tag image for ECR
-      command: docker tag {{ image_name }}:latest {{ ecr_repo }}:latest
+      command: docker tag {{ image_name }}:latest {{ ecr_repo }}:{{ build_number }}
 
     - name: Push image to ECR
-      command: docker push {{ ecr_repo }}:latest
+      command: docker push {{ ecr_repo }}:{{ build_number }}
