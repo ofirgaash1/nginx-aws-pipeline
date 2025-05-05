@@ -32,7 +32,7 @@ pipeline {
 
     stage('Deploy to ECS with Terraform') {
       steps {
-        dir('terraform') {
+        dir('nginx/terraform') {
           sh """
             terraform init
             terraform apply -auto-approve \

@@ -1,20 +1,18 @@
 #!/bin/bash
 
-IMPORT_FLAG_FILE="/workspace/terraform/.terraform-imported"
-
 cd /workspace/terraform || exit 1
 
-if [ -f "$IMPORT_FLAG_FILE" ]; then
-  echo "[INFO] Terraform import already completed. Skipping."
+echo "[INFO] Running terraform init..."
+terraform init -input=false || exit 1
+
+# Check if the ECS service is already in the state
+terraform state list | grep '^aws_ecs_service.my_service$' > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+  echo "[INFO] ECS service already imported in state. Skipping."
   exit 0
 fi
-
-echo "[INFO] Running terraform init..."
-terraform init || exit 1
 
 echo "[INFO] Importing ECS service into Terraform state..."
 terraform import aws_ecs_service.my_service imtech/ofir || exit 1
 
-# Mark as completed
-touch "$IMPORT_FLAG_FILE"
-echo "[INFO] Import completed. Flag written to $IMPORT_FLAG_FILE"
