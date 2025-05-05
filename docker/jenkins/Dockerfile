@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     sudo
 
 # Add Jenkins user to docker group
-RUN usermod -aG docker jenkins
+RUN groupadd -g 999 docker && usermod -aG docker jenkins
 
 # Copy plugin list and install them
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
