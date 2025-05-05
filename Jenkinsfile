@@ -22,6 +22,14 @@ pipeline {
       }
     }
 
+    stage('Import ECS (one-time only)') {
+      steps {
+        dir('terraform') {
+          sh 'terraform-import.sh'
+        }
+      }
+    }
+
     stage('Deploy to ECS with Terraform') {
       steps {
         dir('terraform') {

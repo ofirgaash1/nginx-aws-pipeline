@@ -27,6 +27,9 @@ RUN curl -fsSL https://releases.hashicorp.com/terraform/1.6.6/terraform_1.6.6_li
     mv terraform /usr/local/bin/ && \
     rm terraform.zip
 
+# Copy helper scripts
+COPY scripts/terraform-import.sh /usr/local/bin/terraform-import.sh
+RUN chmod +x /usr/local/bin/terraform-import.sh
 
 
 USER jenkins
