@@ -3,7 +3,7 @@
 cd /workspace/terraform || exit 1
 
 echo "[INFO] Running terraform init..."
-terraform init -input=false -force-copy || exit 1
+terraform init -force-copy || exit 1
 
 # Check if the ECS service is already in the state
 terraform state list | grep '^aws_ecs_service.my_service$' > /dev/null 2>&1
