@@ -13,7 +13,7 @@ echo "[INFO] Running terraform init..."
 terraform init || exit 1
 
 echo "[INFO] Importing ECS service into Terraform state..."
-terraform import aws_ecs_service.my_service ofir || exit 1
+terraform import aws_ecs_service.my_service imtech/ofir || exit 1
 
 # Mark as completed
 touch "$IMPORT_FLAG_FILE"
