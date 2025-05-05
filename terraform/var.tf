@@ -6,10 +6,6 @@ variable "service_name" {
   description = "The ECS service name"
   default     = "ofir"
 }
-variable "container_image" {
-  description = "The Docker image to use for the container"
-  default = ???????????????????????????
-}
 variable "desired_count" {
   description = "Desired number of running tasks"
   default     = 1
