@@ -1,6 +1,12 @@
 pipeline {
   agent any
 
+  environment {
+    ECR_REPO = '314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    FULL_IMAGE = "${ECR_REPO}:${IMAGE_TAG}"
+  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -11,7 +17,7 @@ pipeline {
     stage('Build and Push Docker Image with Ansible') {
       steps {
         dir('ansible') {
-          sh "ansible-playbook deploy.yml -e build_number=${BUILD_NUMBER}"
+          sh "ansible-playbook deploy.yml -e build_number=${IMAGE_TAG}"
         }
       }
     }
@@ -22,7 +28,7 @@ pipeline {
           sh """
             terraform init
             terraform apply -auto-approve \
-              -var="container_image=314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo:${BUILD_NUMBER}"
+              -var="container_image=${FULL_IMAGE}"
           """
         }
       }

@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 data "aws_cloudwatch_log_group" "ecs_log_group" {
-  name              = "/ecs/ofir-log"
+  name              = "/ecs/ofir-logs"
 }
 
 data "aws_lb_target_group" "existing_tg" {
