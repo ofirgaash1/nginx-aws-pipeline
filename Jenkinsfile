@@ -15,5 +15,18 @@ pipeline {
         }
       }
     }
+
+    stage('Deploy to ECS with Terraform') {
+      steps {
+        dir('terraform') {
+          sh """
+            terraform init
+            terraform apply -auto-approve \
+              -var="container_image=314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo:${BUILD_NUMBER}"
+          """
+        }
+      }
+    }
   }
 }
+
