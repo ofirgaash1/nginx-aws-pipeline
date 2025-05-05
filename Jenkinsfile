@@ -34,7 +34,7 @@ pipeline {
       steps {
         dir('nginx/terraform') {
           sh """
-          terraform init -input=false -reconfigure
+          terraform init -reconfigure
           terraform apply -auto-approve -var="container_image=${FULL_IMAGE}"
         """
         }
