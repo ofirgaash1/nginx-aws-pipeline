@@ -6,7 +6,7 @@
   vars:
     image_name: my-nginx
     ecr_repo: 314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo
-    region: il-center-1
+    region: il-central-1
 
   tasks:
     - name: Build Docker image
