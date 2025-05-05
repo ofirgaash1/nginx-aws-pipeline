@@ -22,10 +22,10 @@ pipeline {
       }
     }
 
-    stage('Import ECS (one-time only)') {
+    stage('Import ECS and ALB (one-time only)') {
       steps {
-        dir('terraform') {
-          sh 'terraform-import.sh'
+        dir('docker/jenkins/scripts') {
+          sh './terraform-import.sh'
         }
       }
     }
