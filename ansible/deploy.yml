@@ -1,0 +1,36 @@
+- name: Build and push Docker image to ECR
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    image_name: my-nginx
+    ecr_repo: 314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo
+    region: us-east-1
+
+  tasks:
+    - name: Build Docker image
+      community.docker.docker_image:
+        name: "{{ image_name }}"
+        tag: latest
+        source: build
+        build:
+          path: "/home/ofir/spam/nginx-docker"
+          dockerfile: Dockerfile
+
+    - name: Get ECR login password
+      command: aws ecr get-login-password --region {{ region }}
+      register: ecr_password
+      no_log: true
+
+    - name: Login to ECR
+      community.docker.docker_login:
+        registry_url: "{{ ecr_repo }}"
+        username: AWS
+        password: "{{ ecr_password.stdout }}"
+
+    - name: Tag image for ECR
+      command: docker tag {{ image_name }}:latest {{ ecr_repo }}:latest
+
+    - name: Push image to ECR
+      command: docker push {{ ecr_repo }}:latest

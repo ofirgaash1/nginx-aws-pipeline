@@ -1,0 +1,28 @@
+# Jenkins secrets and sensitive files
+docker/jenkins/jenkins-home/secrets/
+docker/jenkins/jenkins-home/secret.key
+docker/jenkins/jenkins-home/identity.key.enc
+docker/jenkins/jenkins-home/secret.key.not-so-secret
+docker/jenkins/jenkins-home/credentials.xml
+docker/jenkins/jenkins-home/hudson.util.Secret
+
+# Jenkins runtime junk
+docker/jenkins/jenkins-home/logs/
+docker/jenkins/jenkins-home/war/
+docker/jenkins/jenkins-home/fingerprints/
+docker/jenkins/jenkins-home/workspace/
+docker/jenkins/jenkins-home/updates/
+docker/jenkins/jenkins-home/cache/
+docker/jenkins/jenkins-home/queue.xml*
+
+
+# Terraform junk (future)
+.terraform/
+*.tfstate*
+*.terraform.lock.hcl
+
+# Python/Ansible
+*.retry
+__pycache__/
+
+docker/jenkins/jenkins-home/
