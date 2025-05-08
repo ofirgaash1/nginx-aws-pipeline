@@ -18,6 +18,7 @@
         build:
           path: "/home/ofir/spam/nginx"
           dockerfile: Dockerfile
+          nocache: true
           pull: true
 
     - name: Get ECR login password
