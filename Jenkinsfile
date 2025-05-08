@@ -48,17 +48,20 @@ pipeline {
         }
       }
     }
-    
+        
     stage('Deploy to ECS with Terraform') {
       steps {
         dir('nginx/terraform') {
           sh """
-            terraform apply -input=false -auto-approve \
-              -var="container_image=${FULL_IMAGE}"
+            terraform apply -input=false -auto-approve \\
+              -var="container_image=${FULL_IMAGE}" \\
+              -var="rest_api_id=mj92zct6nc" \\
+              -var="resource_id=8267a0"
           """
         }
       }
     }
+
 
 
     
