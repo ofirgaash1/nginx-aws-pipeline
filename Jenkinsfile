@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    ECR_REPO = '314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo'
+    ECR_REPO = '314525640319.dkr.ecr.il-central-1.amazonaws.com/ofir/nginx'
     IMAGE_TAG = "${BUILD_NUMBER}"
     FULL_IMAGE = "${ECR_REPO}:${IMAGE_TAG}"
   }
