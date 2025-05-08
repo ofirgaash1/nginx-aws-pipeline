@@ -26,3 +26,5 @@ docker/jenkins/jenkins-home/queue.xml*
 __pycache__/
 
 docker/jenkins/jenkins-home/
+
+lambda.zip
