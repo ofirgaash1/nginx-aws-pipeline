@@ -18,6 +18,7 @@
         build:
           path: "/home/ofir/spam/nginx"
           dockerfile: Dockerfile
+          pull: true
 
     - name: Get ECR login password
       command: aws ecr get-login-password --region {{ region }}
