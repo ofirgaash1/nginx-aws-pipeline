@@ -2,6 +2,7 @@ provider "aws" {
   region = "il-central-1"
 }
 
+# === Data sources ===
 data "aws_cloudwatch_log_group" "ecs_log_group" {
   name = "/ecs/ofir-logs"
 }
@@ -14,14 +15,15 @@ data "aws_lb" "existing_alb" {
   name = var.lb_name
 }
 
+# === IAM role for Lambda ===
 resource "aws_iam_role" "lambda_exec" {
   name = "ofir-lambda-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
       Effect = "Allow"
+      Action = "sts:AssumeRole"
       Principal = {
         Service = "lambda.amazonaws.com"
       }
@@ -63,8 +65,9 @@ resource "aws_iam_role_policy" "lambda_dynamo_logs" {
   })
 }
 
+# === Lambda function ===
 resource "aws_lambda_function" "ofir_lambda" {
-  function_name    = "ofir-lambda"
+  function_name    = "ofir-dynamo"
   role             = aws_iam_role.lambda_exec.arn
   handler          = "ofir_lambda.lambda_handler"
   runtime          = "python3.12"
@@ -72,6 +75,7 @@ resource "aws_lambda_function" "ofir_lambda" {
   source_code_hash = filebase64sha256("lambda.zip")
 }
 
+# === ECS task definition ===
 resource "aws_ecs_task_definition" "my_task_definition" {
   family                   = "ofir-task"
   requires_compatibilities = ["FARGATE"]
@@ -91,7 +95,6 @@ resource "aws_ecs_task_definition" "my_task_definition" {
       hostPort      = 80
       protocol      = "tcp"
     }]
-
     logConfiguration = {
       logDriver = "awslogs"
       options = {
@@ -103,6 +106,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
   }])
 }
 
+# === ECS service ===
 resource "aws_ecs_service" "my_service" {
   name            = var.service_name
   cluster         = var.cluster_name
@@ -123,6 +127,7 @@ resource "aws_ecs_service" "my_service" {
   }
 }
 
+# === ALB Listener ===
 resource "aws_lb_listener" "http" {
   load_balancer_arn = data.aws_lb.existing_alb.arn
   port              = 8085
@@ -134,17 +139,44 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# === API Gateway OPTIONS method with CORS ===
+# === API Gateway ===
+resource "aws_api_gateway_rest_api" "api" {
+  name = "ofir-api"
+}
+
+resource "aws_api_gateway_resource" "ofir_lambda_resource" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
+  path_part   = "ofir-lambda"
+}
+
+resource "aws_api_gateway_method" "any" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "lambda_proxy" {
+  rest_api_id             = aws_api_gateway_rest_api.api.id
+  resource_id             = aws_api_gateway_resource.ofir_lambda_resource.id
+  http_method             = aws_api_gateway_method.any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.ofir_lambda.invoke_arn
+}
+
+# === CORS support (OPTIONS method) ===
 resource "aws_api_gateway_method" "options" {
-  rest_api_id   = var.rest_api_id
-  resource_id   = var.resource_id
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "options_mock" {
-  rest_api_id       = var.rest_api_id
-  resource_id       = var.resource_id
+  rest_api_id       = aws_api_gateway_rest_api.api.id
+  resource_id       = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method       = "OPTIONS"
   type              = "MOCK"
   request_templates = {
@@ -153,8 +185,8 @@ resource "aws_api_gateway_integration" "options_mock" {
 }
 
 resource "aws_api_gateway_method_response" "options_200" {
-  rest_api_id = var.rest_api_id
-  resource_id = var.resource_id
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
@@ -170,8 +202,8 @@ resource "aws_api_gateway_method_response" "options_200" {
 }
 
 resource "aws_api_gateway_integration_response" "options_200" {
-  rest_api_id = var.rest_api_id
-  resource_id = var.resource_id
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
@@ -186,6 +218,16 @@ resource "aws_api_gateway_integration_response" "options_200" {
   }
 }
 
+# === API Deployment ===
+resource "aws_api_gateway_deployment" "api_deploy" {
+  rest_api_id = aws_api_gateway_rest_api.api.id
+  stage_name  = "default"
+
+  depends_on = [
+    aws_api_gateway_integration.lambda_proxy
+  ]
+}
+
 # === Outputs ===
 output "ecs_service_name" {
   value = aws_ecs_service.my_service.name
@@ -193,4 +235,8 @@ output "ecs_service_name" {
 
 output "task_definition_arn" {
   value = aws_ecs_task_definition.my_task_definition.arn
+}
+
+output "api_gateway_url" {
+  value = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.region}.amazonaws.com/default/ofir-lambda"
 }
