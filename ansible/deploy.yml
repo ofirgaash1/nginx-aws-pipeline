@@ -15,6 +15,7 @@
         name: "{{ image_name }}"
         tag: latest
         source: build
+        force_source: true
         build:
           path: "../nginx"
           dockerfile: Dockerfile
