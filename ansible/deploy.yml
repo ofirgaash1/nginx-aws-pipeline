@@ -16,7 +16,7 @@
         tag: latest
         source: build
         build:
-          path: "/home/ofir/spam/nginx-docker"
+          path: "/home/ofir/spam/nginx"
           dockerfile: Dockerfile
 
     - name: Get ECR login password
