@@ -39,7 +39,13 @@ pipeline {
       steps {
         dir('nginx/terraform') {
           sh """
-            terraform init -input=false -reconfigure
+            terraform init \
+            -input=false \
+            -backend-config="bucket=imtech-2025" \
+            -backend-config="key=Ofir/terraform.tfstate" \
+            -backend-config="region=il-central-1" \
+            -backend-config="encrypt=true"
+
             terraform apply -auto-approve \
               -var="container_image=${FULL_IMAGE}"
           """
