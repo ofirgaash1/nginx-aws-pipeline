@@ -16,10 +16,8 @@
         tag: latest
         source: build
         build:
-          path: "/home/ofir/spam/nginx"
+          path: "../nginx"
           dockerfile: Dockerfile
-          nocache: true
-          pull: true
 
     - name: Get ECR login password
       command: aws ecr get-login-password --region {{ region }}
