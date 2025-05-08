@@ -48,7 +48,16 @@ pipeline {
         }
       }
     }
-        
+    stage('Package Lambda') {
+      steps {
+        dir('lambda') {
+          sh '''
+            zip -r lambda.zip ofir_lambda.py
+            mv lambda.zip ../nginx/terraform/lambda.zip
+          '''
+        }
+      }
+    }
     stage('Deploy to ECS with Terraform') {
       steps {
         dir('nginx/terraform') {
