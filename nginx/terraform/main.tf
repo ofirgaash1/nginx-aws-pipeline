@@ -14,6 +14,55 @@ data "aws_lb" "existing_alb" {
   name = var.lb_name
 }
 
+resource "aws_iam_role" "lambda_exec" {
+  name = "ofir-lambda-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "lambda_dynamo_logs" {
+  name = "lambda-dynamo-logs"
+  role = aws_iam_role.lambda_exec.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup"
+        ]
+        Resource = "arn:aws:logs:il-central-1:314525640319:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:il-central-1:314525640319:log-group:/aws/lambda/ofir-dynamo:*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:Scan"
+        ]
+        Resource = "arn:aws:dynamodb:il-central-1:314525640319:table/imtech"
+      }
+    ]
+  })
+}
+
 resource "aws_lambda_function" "ofir_lambda" {
   function_name    = "ofir-lambda"
   role             = aws_iam_role.lambda_exec.arn
