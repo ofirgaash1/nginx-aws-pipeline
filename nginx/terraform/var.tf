@@ -37,3 +37,12 @@ variable "container_image" {
   default = "314525640319.dkr.ecr.il-central-1.amazonaws.com/ofir/nginx:latest"
 }
 
+variable "rest_api_id" {
+  description = "ID of the existing API Gateway REST API"
+  type        = string
+}
+
+variable "resource_id" {
+  description = "ID of the resource (/ofir-lambda) in the REST API"
+  type        = string
+}
