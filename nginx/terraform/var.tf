@@ -34,6 +34,6 @@ variable "lb_name" {
 variable "container_image" {
   description = "The Docker image to use for the container. This is overridden by Jenkins in CI."
   type        = string
-  default     = "314525640319.dkr.ecr.us-east-1.amazonaws.com/ofir/first-repo:latest"
+  default = "314525640319.dkr.ecr.il-central-1.amazonaws.com/ofir/nginx:latest"
 }
 
