@@ -14,6 +14,15 @@ data "aws_lb" "existing_alb" {
   name = var.lb_name
 }
 
+resource "aws_lambda_function" "ofir_lambda" {
+  function_name    = "ofir-lambda"
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "ofir_lambda.lambda_handler"
+  runtime          = "python3.12"
+  filename         = "lambda.zip"
+  source_code_hash = filebase64sha256("lambda.zip")
+}
+
 resource "aws_ecs_task_definition" "my_task_definition" {
   family                   = "ofir-task"
   requires_compatibilities = ["FARGATE"]
