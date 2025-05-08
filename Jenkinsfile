@@ -13,6 +13,11 @@ pipeline {
         git url: 'https://github.com/ofirgaash1/nginx-aws-pipeline.git', branch: 'master'
       }
     }
+    stage('Check index.html') {
+      steps {
+        sh 'cat nginx/index.html'
+      }
+    }
 
     stage('Build and Push Docker Image with Ansible') {
       steps {
