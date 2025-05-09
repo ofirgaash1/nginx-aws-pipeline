@@ -20,11 +20,7 @@ data "aws_api_gateway_rest_api" "existing_api" {
   name = "imtech"
 }
 
-# Use existing resource: /ofir-lambda
-data "aws_api_gateway_resource" "existing_resource" {
-  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
-  path        = "/ofir-lambda"
-}
+
 
 # === IAM role for Lambda ===
 resource "aws_iam_role" "lambda_exec" {
@@ -149,18 +145,24 @@ resource "aws_lb_listener" "http" {
     target_group_arn = data.aws_lb_target_group.existing_tg.arn
   }
 }
+resource "aws_api_gateway_resource" "ofir_lambda_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+  parent_id   = data.aws_api_gateway_rest_api.existing_api.root_resource_id
+  path_part   = "ofir-lambda"
+}
+
 
 # === API Gateway method/integration for ANY ===
 resource "aws_api_gateway_method" "any" {
   rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id   = data.aws_api_gateway_resource.existing_resource.id
+  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method   = "ANY"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "lambda_proxy" {
   rest_api_id             = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id             = data.aws_api_gateway_resource.existing_resource.id
+  resource_id             = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method             = aws_api_gateway_method.any.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -170,14 +172,14 @@ resource "aws_api_gateway_integration" "lambda_proxy" {
 # === CORS support (OPTIONS method) ===
 resource "aws_api_gateway_method" "options" {
   rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id   = data.aws_api_gateway_resource.existing_resource.id
+  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "options_mock" {
   rest_api_id       = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id       = data.aws_api_gateway_resource.existing_resource.id
+  resource_id       = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method       = "OPTIONS"
   type              = "MOCK"
   request_templates = {
@@ -189,7 +191,7 @@ resource "aws_api_gateway_integration" "options_mock" {
 
 resource "aws_api_gateway_method_response" "options_200" {
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id = data.aws_api_gateway_resource.existing_resource.id
+  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
@@ -208,7 +210,7 @@ resource "aws_api_gateway_method_response" "options_200" {
 
 resource "aws_api_gateway_integration_response" "options_200" {
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
-  resource_id = data.aws_api_gateway_resource.existing_resource.id
+  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
