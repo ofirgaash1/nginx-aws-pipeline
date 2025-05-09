@@ -218,14 +218,17 @@ resource "aws_api_gateway_integration_response" "options_200" {
   }
 }
 
-# === API Deployment ===
 resource "aws_api_gateway_deployment" "api_deploy" {
   rest_api_id = aws_api_gateway_rest_api.api.id
-  stage_name  = "default"
 
   depends_on = [
     aws_api_gateway_integration.lambda_proxy
   ]
+}
+resource "aws_api_gateway_stage" "default" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  deployment_id = aws_api_gateway_deployment.api_deploy.id
+  stage_name    = "default"
 }
 
 # === Outputs ===
