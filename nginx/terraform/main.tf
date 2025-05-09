@@ -15,6 +15,17 @@ data "aws_lb" "existing_alb" {
   name = var.lb_name
 }
 
+# Use existing API Gateway: "imtech"
+data "aws_api_gateway_rest_api" "existing_api" {
+  name = "imtech"
+}
+
+# Use existing resource: /ofir-lambda
+data "aws_api_gateway_resource" "existing_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+  path        = "/ofir-lambda"
+}
+
 # === IAM role for Lambda ===
 resource "aws_iam_role" "lambda_exec" {
   name = "ofir-lambda-role"
