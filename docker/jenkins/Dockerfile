@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     ansible \
     curl \
     git \
-    sudo
+    sudo \
+    zip
 
 # Add Jenkins user to docker group
 RUN groupmod -g 984 docker && usermod -aG docker jenkins
