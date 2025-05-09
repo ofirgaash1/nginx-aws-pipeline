@@ -150,21 +150,17 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-data "aws_api_gateway_resource" "existing_resource" {
-  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
-  path        = "/ofir-lambda"
-}
-
+# === API Gateway method/integration for ANY ===
 resource "aws_api_gateway_method" "any" {
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id   = data.aws_api_gateway_resource.existing_resource.id
   http_method   = "ANY"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "lambda_proxy" {
-  rest_api_id             = aws_api_gateway_rest_api.api.id
-  resource_id             = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id             = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id             = data.aws_api_gateway_resource.existing_resource.id
   http_method             = aws_api_gateway_method.any.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -173,20 +169,22 @@ resource "aws_api_gateway_integration" "lambda_proxy" {
 
 # === CORS support (OPTIONS method) ===
 resource "aws_api_gateway_method" "options" {
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  resource_id   = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id   = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id   = data.aws_api_gateway_resource.existing_resource.id
   http_method   = "OPTIONS"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "options_mock" {
-  rest_api_id       = aws_api_gateway_rest_api.api.id
-  resource_id       = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id       = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id       = data.aws_api_gateway_resource.existing_resource.id
   http_method       = "OPTIONS"
   type              = "MOCK"
   request_templates = {
     "application/json" = jsonencode({ statusCode = 200 })
   }
+
+  depends_on = [aws_api_gateway_method.options]
 }
 
 resource "aws_api_gateway_method_response" "options_200" {
@@ -204,6 +202,8 @@ resource "aws_api_gateway_method_response" "options_200" {
   response_models = {
     "application/json" = "Empty"
   }
+
+  depends_on = [aws_api_gateway_method.options]
 }
 
 resource "aws_api_gateway_integration_response" "options_200" {
@@ -221,6 +221,8 @@ resource "aws_api_gateway_integration_response" "options_200" {
   response_templates = {
     "application/json" = ""
   }
+
+  depends_on = [aws_api_gateway_integration.options_mock]
 }
 
 # === Outputs ===
@@ -233,5 +235,5 @@ output "task_definition_arn" {
 }
 
 output "api_gateway_url" {
-  value = "https://${aws_api_gateway_rest_api.api.id}.execute-api.${var.region}.amazonaws.com/default/ofir-lambda"
+  value = "https://${data.aws_api_gateway_rest_api.existing_api.id}.execute-api.${var.region}.amazonaws.com/default/ofir-lambda"
 }
