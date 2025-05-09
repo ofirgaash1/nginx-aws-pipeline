@@ -141,13 +141,12 @@ resource "aws_lb_listener" "http" {
 
 # === API Gateway ===
 resource "aws_api_gateway_rest_api" "api" {
-  name = "ofir-api"
+  name = "imtech"
 }
 
-resource "aws_api_gateway_resource" "ofir_lambda_resource" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  parent_id   = aws_api_gateway_rest_api.api.root_resource_id
-  path_part   = "ofir-lambda"
+data "aws_api_gateway_resource" "existing_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+  path        = "/ofir-lambda"
 }
 
 resource "aws_api_gateway_method" "any" {
@@ -185,8 +184,8 @@ resource "aws_api_gateway_integration" "options_mock" {
 }
 
 resource "aws_api_gateway_method_response" "options_200" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id = data.aws_api_gateway_resource.existing_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
@@ -202,8 +201,8 @@ resource "aws_api_gateway_method_response" "options_200" {
 }
 
 resource "aws_api_gateway_integration_response" "options_200" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-  resource_id = aws_api_gateway_resource.ofir_lambda_resource.id
+  rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
+  resource_id = data.aws_api_gateway_resource.existing_resource.id
   http_method = "OPTIONS"
   status_code = "200"
 
@@ -216,19 +215,6 @@ resource "aws_api_gateway_integration_response" "options_200" {
   response_templates = {
     "application/json" = ""
   }
-}
-
-resource "aws_api_gateway_deployment" "api_deploy" {
-  rest_api_id = aws_api_gateway_rest_api.api.id
-
-  depends_on = [
-    aws_api_gateway_integration.lambda_proxy
-  ]
-}
-resource "aws_api_gateway_stage" "default" {
-  rest_api_id   = aws_api_gateway_rest_api.api.id
-  deployment_id = aws_api_gateway_deployment.api_deploy.id
-  stage_name    = "default"
 }
 
 # === Outputs ===
