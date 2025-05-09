@@ -150,11 +150,6 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# === API Gateway ===
-resource "aws_api_gateway_rest_api" "api" {
-  name = "imtech"
-}
-
 data "aws_api_gateway_resource" "existing_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.existing_api.id
   path        = "/ofir-lambda"
