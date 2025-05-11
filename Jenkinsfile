@@ -58,20 +58,18 @@ pipeline {
         }
       }
     }
+    
     stage('Deploy to ECS with Terraform') {
       steps {
         dir('nginx/terraform') {
           sh '''
             terraform apply -input=false -auto-approve \
-              -var="container_image=${FULL_IMAGE}"
+              -var="container_image=${FULL_IMAGE}" \
+              -var="vpc_id=vpc-042cee0fdc6a5a7e2"
           '''
         }
       }
     }
-
-
-
-    
   }
 }
 
