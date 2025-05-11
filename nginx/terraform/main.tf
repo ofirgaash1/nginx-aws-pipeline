@@ -7,9 +7,6 @@ data "aws_cloudwatch_log_group" "ecs_log_group" {
   name = "/ecs/ofir-logs"
 }
 
-data "aws_lb_target_group" "existing_tg" {
-  name = var.target_group_name
-}
 
 data "aws_lb" "existing_alb" {
   name = var.lb_name
@@ -20,7 +17,21 @@ data "aws_api_gateway_rest_api" "existing_api" {
   name = "imtech"
 }
 
-
+resource "aws_lb_target_group" "ofir_tg" {
+  name        = var.target_group_name
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
+  health_check {
+    path                = "/"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    matcher             = "200"
+  }
+}
 
 # === IAM role for Lambda ===
 resource "aws_iam_role" "lambda_exec" {
@@ -136,7 +147,7 @@ resource "aws_ecs_service" "my_service" {
   }
 
   load_balancer {
-    target_group_arn = data.aws_lb_target_group.existing_tg.arn
+    target_group_arn = aws_lb_target_group.ofir_tg.arn
     container_name   = "nginx-ofir-container"
     container_port   = 80
   }
@@ -148,9 +159,9 @@ resource "aws_lb_listener" "http" {
   port              = 8085
   protocol          = "HTTP"
 
-  default_action {
+    default_action {
     type             = "forward"
-    target_group_arn = data.aws_lb_target_group.existing_tg.arn
+    target_group_arn = aws_lb_target_group.ofir_tg.arn
   }
 }
 resource "aws_api_gateway_resource" "ofir_lambda_resource" {
