@@ -122,12 +122,7 @@ resource "aws_ecs_task_definition" "my_task_definition" {
       protocol      = "tcp"
     }]
     logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        "awslogs-group"         = data.aws_cloudwatch_log_group.ecs_log_group.name
-        "awslogs-region"        = "il-central-1"
-        "awslogs-stream-prefix" = "ecs"
-      }
+    logDriver = "none"
     }
   }])
 }
