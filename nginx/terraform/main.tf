@@ -110,21 +110,37 @@ resource "aws_ecs_task_definition" "my_task_definition" {
   memory                   = "512"
   execution_role_arn       = "arn:aws:iam::314525640319:role/ecsTaskExecutionRole"
 
-  container_definitions = jsonencode([{
-    name      = "nginx-ofir-container"
-    image     = var.container_image
-    cpu       = 256
-    memory    = 512
-    essential = true
-    portMappings = [{
-      containerPort = 80
-      hostPort      = 80
-      protocol      = "tcp"
-    }]
-    logConfiguration = {
-    logDriver = "none"
+  container_definitions = jsonencode([
+    {
+      name      = "nginx-ofir-container",
+      image     = var.container_image,
+      cpu       = 256,
+      memory    = 512,
+      essential = true,
+      portMappings = [{
+        containerPort = 80,
+        hostPort      = 80,
+        protocol      = "tcp"
+      }],
+      logConfiguration = {
+        logDriver = "awsfirelens",
+        options = {
+          Name = "stdout"
+        }
+      }
+    },
+    {
+      name = "log_router",
+      image = "amazon/aws-for-fluent-bit:latest",
+      essential = true,
+      firelensConfiguration = {
+        type = "fluentbit",
+        options = {
+          "enable-ecs-log-metadata" = "true"
+        }
+      }
     }
-  }])
+  ])
 }
 
 # === ECS service ===
