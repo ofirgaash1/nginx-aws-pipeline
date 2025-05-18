@@ -10,7 +10,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/ofirgaash1/nginx-aws-pipeline.git', branch: 'master'
+        git url: 'https://github.com/ofirgaash1/nginx-aws-pipeline.git', branch: 'logs-handling'
       }
     }
     stage('Check index.html') {
