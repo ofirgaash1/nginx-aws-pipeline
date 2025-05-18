@@ -130,25 +130,33 @@ resource "aws_ecs_task_definition" "my_task_definition" {
       }
     },
     {
-    name = "log_router",
-    image = "amazon/aws-for-fluent-bit:latest",
-    essential = true,
-    firelensConfiguration = {
-      type = "fluentbit",
-      options = {
-        "enable-ecs-log-metadata" = "true",
-        "config.file" = "/fluent-bit/config/custom.conf"
-      }
-    },
-    mountPoints = [
-      {
-        sourceVolume  = "fluentbit-config",
-        containerPath = "/fluent-bit/config"
-      }
-    ]
-  }
+      name = "log_router",
+      image = "amazon/aws-for-fluent-bit:latest",
+      essential = true,
+      firelensConfiguration = {
+        type = "fluentbit",
+        options = {
+          "enable-ecs-log-metadata" = "true",
+          "config.file" = "/fluent-bit/config/custom.conf"
+        }
+      },
+      mountPoints = [
+        {
+          sourceVolume  = "fluentbit-config",
+          containerPath = "/fluent-bit/config"
+        }
+      ]
+    }
   ])
+
+  volumes = [
+    {
+      name = "fluentbit-config"
+      host = null
+    }
+  ]
 }
+
 
 # === ECS service ===
 resource "aws_ecs_service" "my_service" {
